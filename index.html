@@ -4577,8 +4577,9 @@ const SHOW_TYPES = [
   { k: "partner", label: "함께한 파트너", icon: "Users", group: "함께한 파트너" }
 ];
 const SHOW_VIEW_ORDER = ["number", "photo", "voice", "link", "partner", "text"];
-const SHOW_DEFAULT = { partners: "partner", voc: "voice", showcase: "link", metrics: "number" };
+const SHOW_DEFAULT = { partners: "partner", voc: "voice", showcase: "link", metrics: "number", pipeShow: "photo" };
 const isPipeline = (kind) => kind === "pipeline";
+const showKind = (kind) => isPipeline(kind) ? "pipeShow" : kind;
 function showItemsOf(d, kind) {
   const sp = d && d.special || {};
   if (Array.isArray(sp.items)) return sp.items.filter((x) => x && typeof x === "object" && x.type);
@@ -4587,7 +4588,7 @@ function showItemsOf(d, kind) {
   for (const v of sp.voc || []) out.push({ uid: v.uid, type: "voice", text: v.text, src: v.src || "" });
   for (const l of sp.links || []) out.push({ uid: l.uid, type: "link", title: l.title, url: l.url });
   for (const p of sp.partners || []) out.push({ uid: p.uid, type: "partner", title: p.name, text: p.note || "" });
-  if (!isPipeline(kind) && String(sp.note || "").trim()) out.push({ uid: "note", type: "text", text: sp.note });
+  if (!isPipeline(kind) && kind !== "pipeShow" && String(sp.note || "").trim()) out.push({ uid: "note", type: "text", text: sp.note });
   return out;
 }
 function editShow(x, kind, fn) {
@@ -4908,7 +4909,7 @@ const chunkOf = (arr, n) => {
 };
 function deckLists(t, d, prev) {
   const pf = profileOf(t);
-  const items = isPipeline(pf.kind) ? [] : showItemsOf(d, pf.kind);
+  const items = showItemsOf(d, showKind(pf.kind));
   const order = (x) => SHOW_VIEW_ORDER.indexOf(x.type);
   return {
     move: boostKRs(t).map(({ k }) => k),
@@ -4940,12 +4941,9 @@ function deckSlides(teams, month, dataFor, state) {
     add("learn", L.learn.length);
     add("miss", L.miss.length);
     add("block", L.block.length);
-    if (isPipeline(pf.kind)) {
-      if (showHas(pf.kind, t, d, state)) out.push({ id: `${t.id}:pipe:0`, kind: "pipe", team: t, page: 0, pages: 1 });
-    } else {
-      if (L.photo.length) add("photo", L.photo.length);
-      if (L.show.length) add("show", L.show.length);
-    }
+    if (isPipeline(pf.kind) && showHas(pf.kind, t, d, state)) out.push({ id: `${t.id}:pipe:0`, kind: "pipe", team: t, page: 0, pages: 1 });
+    if (L.photo.length) add("photo", L.photo.length);
+    if (L.show.length) add("show", L.show.length);
     add("plan", L.plan.length);
   }
   return out;
@@ -5190,7 +5188,7 @@ function DeckSlide({ s, ctx }) {
     return split({
       title: "결과물과 현장 기록",
       sub: xs.some((x) => x.type === "link") ? "링크는 누르면 새 창에서 열려요" : "말보다 보여 주는 게 빠른 것들",
-      children: /* @__PURE__ */ React.createElement(DeckList, null, xs.map((x) => /* @__PURE__ */ React.createElement(DeckShowItem, { key: x.uid, x, team: t, prevD: prev, kind: pf.kind, accent: A })))
+      children: /* @__PURE__ */ React.createElement(DeckList, null, xs.map((x) => /* @__PURE__ */ React.createElement(DeckShowItem, { key: x.uid, x, team: t, prevD: prev, kind: showKind(pf.kind), accent: A })))
     });
   }
   if (s.kind === "pipe") {
@@ -5457,7 +5455,7 @@ function TeamBrief({ t, d, toLabel, mv, tm, onOpen }) {
   const hiText = hi ? String(hi.text).trim() : String(d.wins || "").trim();
   const more = ln.length + ms.length - (hi ? 1 : 0);
   const openB = (d.blockers || []).filter((b) => b.status !== "done");
-  const items = isPipeline(pf.kind) ? [] : showItemsOf(d, pf.kind);
+  const items = showItemsOf(d, showKind(pf.kind));
   const kinds = SHOW_TYPES.filter((x) => items.some((y) => y.type === x.k));
   const c = sigCount(mv);
   const chips = BOOST_SIGNALS.filter((s) => c[s.k]);
@@ -5551,6 +5549,8 @@ function BoostTeamView({ state, calc, team, d, prev, month, prevKey, teams, set,
   const tm = boostTeamMove(team, mv, calc, month);
   const hasSpecial = showHas(pf.kind, team, d, state);
   const showSpecial = hasSpecial || !present;
+  const pipe = isPipeline(pf.kind);
+  const showExtra = pipe && (showItemsOf(d, "pipeShow").length > 0 || !present);
   const prevB = prev.blockers || [];
   const prevPlans = plansFilled(prev);
   const hasPrev = prevPlans.length > 0 || prevB.length > 0;
@@ -5570,6 +5570,7 @@ function BoostTeamView({ state, calc, team, d, prev, month, prevKey, teams, set,
     hasKR && { id: "move", label: "이번 달 움직임" },
     { id: "talk", label: "이야기 나누기" },
     showSpecial && { id: "show", label: isPipeline(pf.kind) ? "제품 파이프라인" : "결과물" },
+    showExtra && { id: "show2", label: "결과물" },
     { id: "plan", label: "다음 달 계획" }
   ].filter(Boolean);
   const nOf = (id) => steps.findIndex((x) => x.id === id) + 1;
@@ -5583,7 +5584,7 @@ function BoostTeamView({ state, calc, team, d, prev, month, prevKey, teams, set,
     }) })), (b.help || (b.to || []).length > 0) && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[16px] leading-relaxed text-slate-600" }, b.help, b.help && (b.to || []).length > 0 && " ", (b.to || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "whitespace-nowrap font-bold text-indigo-700" }, "→ ", b.to.map(toLabel).join(", "))), /* @__PURE__ */ React.createElement("div", { className: "mt-2.5 flex items-center gap-1 border-t border-slate-100 pt-2" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[13.5px] font-bold text-slate-400" }, "결정·지원"), /* @__PURE__ */ React.createElement(DecisionInput, { big: true, value: b.decision, onChange: (v) => patchB(set, b, (y) => {
       y.decision = v;
     }) })));
-  })) : d.noBlocker ? /* @__PURE__ */ React.createElement("p", { className: "text-[16.5px] text-slate-500" }, "이번 달은 따로 필요한 도움이 없어요") : /* @__PURE__ */ React.createElement(Empty, { onEdit })))), showSpecial && /* @__PURE__ */ React.createElement(StepSec, { id: "show", n: nOf("show"), accent: A, title: isPipeline(pf.kind) ? pf.title : "이번 달 결과물과 현장 기록", hint: isPipeline(pf.kind) ? "체크리스트에서 자동으로 모아요" : "말보다 보여 주는 게 빠른 것들" }, /* @__PURE__ */ React.createElement("section", { className: "min-w-0 rounded-2xl bg-surface p-5 ring-1 ring-slate-200", "data-view-section": "special" }, /* @__PURE__ */ React.createElement(BoostShowView, { kind: pf.kind, team, d, prevD: prev, state, calc, month, accent: A }))), /* @__PURE__ */ React.createElement(StepSec, { id: "plan", n: nOf("plan"), accent: A, title: "다음 달 실행 계획", hint: "어디에 어떻게 집중하고 도전해 볼지" }, /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl bg-surface p-5 ring-1 ring-slate-200", "data-boost-plan": true }, plans.length ? /* @__PURE__ */ React.createElement("ul", { className: "grid gap-3 md:grid-cols-2" }, plans.map((x) => /* @__PURE__ */ React.createElement("li", { key: x.uid, className: "flex min-w-0 flex-col gap-1.5 rounded-xl bg-slate-50 px-4 py-3", style: { boxShadow: `inset 3px 0 0 ${A}` }, "data-plan-item": true }, x.kr ? /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement(KrTag, { team, uid: x.kr })) : /* @__PURE__ */ React.createElement("span", { className: "text-[13.5px] font-semibold text-slate-400" }, "팀 전체"), /* @__PURE__ */ React.createElement("p", { className: "whitespace-pre-wrap text-[17.5px] font-semibold leading-relaxed text-slate-900" }, x.how)))) : /* @__PURE__ */ React.createElement("p", { className: "text-[16px] text-slate-400" }, "아직 세운 계획이 없어요", onEdit && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onEdit, className: "ml-2 font-semibold text-indigo-700 hover:underline" }, "적기 →")))));
+  })) : d.noBlocker ? /* @__PURE__ */ React.createElement("p", { className: "text-[16.5px] text-slate-500" }, "이번 달은 따로 필요한 도움이 없어요") : /* @__PURE__ */ React.createElement(Empty, { onEdit })))), showSpecial && /* @__PURE__ */ React.createElement(StepSec, { id: "show", n: nOf("show"), accent: A, title: isPipeline(pf.kind) ? pf.title : "이번 달 결과물과 현장 기록", hint: isPipeline(pf.kind) ? "체크리스트에서 자동으로 모아요" : "말보다 보여 주는 게 빠른 것들" }, /* @__PURE__ */ React.createElement("section", { className: "min-w-0 rounded-2xl bg-surface p-5 ring-1 ring-slate-200", "data-view-section": "special" }, /* @__PURE__ */ React.createElement(BoostShowView, { kind: pf.kind, team, d, prevD: prev, state, calc, month, accent: A }))), showExtra && /* @__PURE__ */ React.createElement(StepSec, { id: "show2", n: nOf("show2"), accent: A, title: "이번 달 결과물과 현장 기록", hint: "말보다 보여 주는 게 빠른 것들" }, /* @__PURE__ */ React.createElement("section", { className: "min-w-0 rounded-2xl bg-surface p-5 ring-1 ring-slate-200", "data-view-section": "special2" }, /* @__PURE__ */ React.createElement(BoostShowView, { kind: "pipeShow", team, d, prevD: prev, state, calc, month, accent: A }))), /* @__PURE__ */ React.createElement(StepSec, { id: "plan", n: nOf("plan"), accent: A, title: "다음 달 실행 계획", hint: "어디에 어떻게 집중하고 도전해 볼지" }, /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl bg-surface p-5 ring-1 ring-slate-200", "data-boost-plan": true }, plans.length ? /* @__PURE__ */ React.createElement("ul", { className: "grid gap-3 md:grid-cols-2" }, plans.map((x) => /* @__PURE__ */ React.createElement("li", { key: x.uid, className: "flex min-w-0 flex-col gap-1.5 rounded-xl bg-slate-50 px-4 py-3", style: { boxShadow: `inset 3px 0 0 ${A}` }, "data-plan-item": true }, x.kr ? /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement(KrTag, { team, uid: x.kr })) : /* @__PURE__ */ React.createElement("span", { className: "text-[13.5px] font-semibold text-slate-400" }, "팀 전체"), /* @__PURE__ */ React.createElement("p", { className: "whitespace-pre-wrap text-[17.5px] font-semibold leading-relaxed text-slate-900" }, x.how)))) : /* @__PURE__ */ React.createElement("p", { className: "text-[16px] text-slate-400" }, "아직 세운 계획이 없어요", onEdit && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onEdit, className: "ml-2 font-semibold text-indigo-700 hover:underline" }, "적기 →")))));
 }
 function BoostCard({ n, title, sub, children, accent, right }) {
   return /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl bg-surface p-5 ring-1 ring-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-start gap-3" }, n ? /* @__PURE__ */ React.createElement("span", { className: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[16px] font-bold text-white", style: { background: accent } }, n) : null, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("h3", { className: "text-[19px] font-bold leading-snug text-slate-900" }, title), sub && /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[14.5px] leading-relaxed text-slate-500" }, sub)), right), children);
@@ -5773,7 +5774,7 @@ function BoostTeamEdit({ state, calc, team, d, prevD, month, kb, teams, me, set,
       sub: isPipeline(pf.kind) ? "제품개발 체크리스트에서 자동으로 모아요. 체크리스트만으로 보이지 않는 내용은 아래에 부연 설명으로 적어요." : "글·링크·사진·현장 숫자·고객의 목소리·함께한 파트너 중 골라 남겨요. 발표 때 바로 보여 줄 수 있어요."
     },
     /* @__PURE__ */ React.createElement(BoostShowEdit, { kind: pf.kind, team, d, prevD, set, state, calc, month, accent: pf.accent, me })
-  ), /* @__PURE__ */ React.createElement(BoostCard, { title: "고마웠던 팀", sub: "이번 달 다른 팀에 고마웠던 일을 한 줄로 남겨요. 한눈에 보기에 모여요." }, thanksOf(d).length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mb-3 flex flex-col gap-1.5" }, thanksOf(d).map((c) => /* @__PURE__ */ React.createElement("li", { key: c.uid, className: "flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-[15.5px]" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 whitespace-nowrap font-bold text-slate-700" }, "→ ", boostTo(teams)(c.to)), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-slate-800" }, c.text), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": "고마운 일 삭제", onClick: () => set((x) => {
+  ), isPipeline(pf.kind) && /* @__PURE__ */ React.createElement(BoostCard, { title: "이번 달 결과물과 현장 기록", accent: pf.accent, sub: "글·링크·사진·현장 숫자·고객의 목소리·함께한 파트너 중 골라 남겨요. 발표 때 바로 보여 줄 수 있어요." }, /* @__PURE__ */ React.createElement(BoostShowEdit, { kind: "pipeShow", team, d, prevD, set, state, calc, month, accent: pf.accent, me })), /* @__PURE__ */ React.createElement(BoostCard, { title: "고마웠던 팀", sub: "이번 달 다른 팀에 고마웠던 일을 한 줄로 남겨요. 한눈에 보기에 모여요." }, thanksOf(d).length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mb-3 flex flex-col gap-1.5" }, thanksOf(d).map((c) => /* @__PURE__ */ React.createElement("li", { key: c.uid, className: "flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-[15.5px]" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 whitespace-nowrap font-bold text-slate-700" }, "→ ", boostTo(teams)(c.to)), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-slate-800" }, c.text), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": "고마운 일 삭제", onClick: () => set((x) => {
     x.cheers = (x.cheers || []).filter((z) => z.uid !== c.uid);
   }), className: "shrink-0 rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600" }, /* @__PURE__ */ React.createElement(Icon, { name: "Trash2", size: 15 }))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5", role: "group", "aria-label": "고마운 팀" }, teams.filter((t) => t.id !== team.id).map((t) => /* @__PURE__ */ React.createElement("button", { key: t.id, type: "button", "aria-pressed": thx.to === t.id, onClick: () => setThx({ ...thx, to: thx.to === t.id ? "" : t.id }), className: chip(thx.to === t.id) }, t.name))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",

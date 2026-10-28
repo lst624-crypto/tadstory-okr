@@ -137,11 +137,6 @@ body{font-size:18px;letter-spacing:-0.01em;font-feature-settings:"ss06"}
   margin-right: -1rem
 }
 
-.mx-2 {
-  margin-left: 0.5rem;
-  margin-right: 0.5rem
-}
-
 .my-1 {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem
@@ -460,6 +455,10 @@ body{font-size:18px;letter-spacing:-0.01em;font-feature-settings:"ss06"}
 
 .scroll-mt-28 {
   scroll-margin-top: 7rem
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr))
 }
 
 .grid-cols-6 {
@@ -939,11 +938,6 @@ body{font-size:18px;letter-spacing:-0.01em;font-feature-settings:"ss06"}
   color: rgb(var(--indigo-950) / var(--tw-text-opacity))
 }
 
-.text-rose-400 {
-  --tw-text-opacity: 1;
-  color: rgb(var(--rose-400) / var(--tw-text-opacity))
-}
-
 .text-rose-500 {
   --tw-text-opacity: 1;
   color: rgb(var(--rose-500) / var(--tw-text-opacity))
@@ -1386,10 +1380,6 @@ body{font-size:18px;letter-spacing:-0.01em;font-feature-settings:"ss06"}
     max-height: 100%
   }
 
-  .md\:grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr))
-  }
-
   .md\:grid-cols-\[auto_minmax\(0\2c 1fr\)\] {
     grid-template-columns: auto minmax(0,1fr)
   }
@@ -1445,12 +1435,12 @@ body{font-size:18px;letter-spacing:-0.01em;font-feature-settings:"ss06"}
     display: inline
   }
 
-  .lg\:w-\[228px\] {
-    width: 228px
-  }
-
   .lg\:w-\[64px\] {
     width: 64px
+  }
+
+  .lg\:w-\[96px\] {
+    width: 96px
   }
 
   .lg\:shrink-0 {
@@ -4236,13 +4226,14 @@ function BoostTimer({ resetKey }) {
   }, "aria-label": "타이머 처음부터", className: "rounded-md p-1.5 text-slate-600 hover:bg-slate-100" }, /* @__PURE__ */ React.createElement(Icon, { name: "RotateCcw", size: 16 })), /* @__PURE__ */ React.createElement("select", { value: mins, onChange: (e) => setMins(Number(e.target.value)), "aria-label": "발표 시간", className: "h-8 rounded-md border-0 bg-transparent px-1 text-[15.5px] font-semibold text-slate-600 ring-1 ring-inset ring-slate-200 focus:outline-none" }, [5, 7, 10, 15, 20].map((m) => /* @__PURE__ */ React.createElement("option", { key: m, value: m }, m, "분"))));
 }
 const BOOST_SIGNAL_RULE = { aheadP: 0.15, behindP: 0.15, stallWeeks: 4, minMoveP: 5e-3 };
-const BOOST_SIGNALS = [
+const BOOST_SIGNALS_ALL = [
   { k: "ahead", label: "예상보다 빠름", icon: "TrendingUp", why: "차주 예상보다 15%p 이상 앞섬" },
   { k: "behind", label: "예상과 다름", icon: "ArrowLeftRight", why: "차주 예상보다 15%p 이상 낮음" },
   { k: "stall", label: "4주째 그대로", icon: "Pause", why: "4주 연속 현재값이 같음" },
   { k: "turn", label: "변동 사항", icon: "CornerDownRight", why: "수정·폐기·신규추가로 바뀐 KR·IN" },
   { k: "done", label: "완료", icon: "CircleCheck", why: "진행 상태 완료" }
 ];
+const BOOST_SIGNALS = BOOST_SIGNALS_ALL.filter((s) => s.k === "done");
 const BOOST_TURN_MODS = ["수정", "폐기", "신규추가"];
 const boostTo = (teams) => (x) => x === "leader" ? "리더" : (teams.find((t) => t.id === x) || {}).name || x;
 const boostKRs = (team) => (team.objectives || []).filter((o) => o.mod !== "폐기").flatMap((o) => (o.krs || []).filter((k) => k.mod !== "폐기").map((k) => ({ o, k })));
@@ -4465,7 +4456,7 @@ function SigChip({ s, n, open, onClick }) {
     /* @__PURE__ */ React.createElement("span", { className: "tabular-nums text-slate-500" }, n)
   );
 }
-const MV_SIG = "flex flex-wrap gap-1.5 lg:w-[228px] lg:shrink-0";
+const MV_SIG = "flex flex-wrap gap-1.5 lg:w-[96px] lg:shrink-0";
 const MV_TG = "flex shrink-0 justify-end lg:w-[64px]";
 const MV_TG0 = "hidden shrink-0 lg:block lg:w-[64px]";
 const inSigs = (m, uid) => BOOST_SIGNALS.filter((s) => (m.sig[s.k] || []).some((x) => x.i && x.i.uid === uid));
@@ -4477,7 +4468,7 @@ function BoostMovement({ team, month, calc, mv, present, period }) {
   const accent = profileOf(team).accent;
   const allOpen = krs.every(({ k }) => insOpen[k.uid]);
   const toggleAll = () => setInsOpen(Object.fromEntries(krs.map(({ k }) => [k.uid, !allOpen])));
-  return /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl bg-surface px-5 py-4 ring-1 ring-slate-200", "data-boost-move": true }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "mb-1 flex flex-wrap items-center gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[14.5px] text-slate-500" }, "KR마다 지난달 말 대비 변화 · 태그를 누르면 해당 IN이 보여요"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: toggleAll, "aria-expanded": allOpen, "data-ins-all": true, className: "ml-auto inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-[14.5px] font-semibold text-indigo-700 hover:bg-indigo-50" }, /* @__PURE__ */ React.createElement(Icon, { name: "Layers", size: 15 }), allOpen ? "IN 모두 접기" : "IN 모두 펼치기")), /* @__PURE__ */ React.createElement("ul", { className: "flex flex-col divide-y divide-slate-100" }, krs.map(({ k }) => {
+  return /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl bg-surface px-5 py-4 ring-1 ring-slate-200", "data-boost-move": true }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "mb-1 flex flex-wrap items-center gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[14.5px] text-slate-500" }, "KR마다 지난달 말 대비 변화 · ‘완료’를 누르면 끝낸 IN이 보여요"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: toggleAll, "aria-expanded": allOpen, "data-ins-all": true, className: "ml-auto inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-[14.5px] font-semibold text-indigo-700 hover:bg-indigo-50" }, /* @__PURE__ */ React.createElement(Icon, { name: "Layers", size: 15 }), allOpen ? "IN 모두 접기" : "IN 모두 펼치기")), /* @__PURE__ */ React.createElement("ul", { className: "flex flex-col divide-y divide-slate-100" }, krs.map(({ k }) => {
     const m = mv[k.uid] || { delta: null, ins: {}, sig: { ahead: [], behind: [], stall: [], turn: [], done: [] } };
     const key = open[k.uid];
     const list = key ? m.sig[key] : [];
@@ -5074,9 +5065,8 @@ function DeckSlide({ s, ctx }) {
       const d2 = dataFor(month, t2.id);
       return d2.star && ["learn", "miss"].some((f) => notesFilled(d2, f).some((x) => x.uid === d2.star));
     }).length;
-    const thanks = teams.reduce((a, t2) => a + thanksOf(dataFor(month, t2.id)).length, 0);
     const ring = Math.round(Math.min(vp.h * 0.13, vp.w * 0.075));
-    return /* @__PURE__ */ React.createElement("div", { className: "flex h-full flex-col justify-center gap-[4.5vh]", "data-deck-kind": "all" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "dk-s mb-2 font-bold text-indigo-700" }, "TAD STORY OKR"), /* @__PURE__ */ React.createElement("h1", { className: "dk-t font-bold text-slate-900" }, monthLabel(month), " 부스팅 미팅"), /* @__PURE__ */ React.createElement("p", { className: "dk-s mt-3 text-slate-600" }, "팀마다 10분 · ", BOOST_FLOW.join(" → "))), /* @__PURE__ */ React.createElement("dl", { className: "grid grid-cols-2 gap-[2vw] md:grid-cols-4" }, [["리더가 답할 도움", leader.length, "건"], ["열린 도움 요청", open.length, "건"], ["나눌 인사이트", insights, "개"], ["고마운 일", thanks, "개"]].map(([l, v, u]) => /* @__PURE__ */ React.createElement("div", { key: l, className: "border-l-4 border-slate-200 pl-[1.2vw]" }, /* @__PURE__ */ React.createElement("dt", { className: "dk-s font-semibold text-slate-500" }, l), /* @__PURE__ */ React.createElement("dd", { className: "dk-t font-bold tabular-nums text-slate-900" }, v, /* @__PURE__ */ React.createElement("span", { className: "dk-s ml-1 font-semibold text-slate-400" }, u))))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-[1.4vw] md:grid-cols-3 xl:grid-cols-5" }, teams.map((t2) => {
+    return /* @__PURE__ */ React.createElement("div", { className: "flex h-full flex-col justify-center gap-[4.5vh]", "data-deck-kind": "all" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "dk-s mb-2 font-bold text-indigo-700" }, "TAD STORY OKR"), /* @__PURE__ */ React.createElement("h1", { className: "dk-t font-bold text-slate-900" }, monthLabel(month), " 부스팅 미팅"), /* @__PURE__ */ React.createElement("p", { className: "dk-s mt-3 text-slate-600" }, "팀마다 10분 · ", BOOST_FLOW.join(" → "))), /* @__PURE__ */ React.createElement("dl", { className: "grid grid-cols-3 gap-[2vw]" }, [["리더가 답할 도움", leader.length, "건"], ["열린 도움 요청", open.length, "건"], ["나눌 인사이트", insights, "개"]].map(([l, v, u]) => /* @__PURE__ */ React.createElement("div", { key: l, className: "border-l-4 border-slate-200 pl-[1.2vw]" }, /* @__PURE__ */ React.createElement("dt", { className: "dk-s font-semibold text-slate-500" }, l), /* @__PURE__ */ React.createElement("dd", { className: "dk-t font-bold tabular-nums text-slate-900" }, v, /* @__PURE__ */ React.createElement("span", { className: "dk-s ml-1 font-semibold text-slate-400" }, u))))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-[1.4vw] md:grid-cols-3 xl:grid-cols-5" }, teams.map((t2) => {
       const pf2 = profileOf(t2);
       const tm = boostTeamMove(t2, moves[t2.id] || {}, calc, month);
       return /* @__PURE__ */ React.createElement("button", { key: t2.id, type: "button", onClick: () => jump(`${t2.id}:intro:0`), className: "relative flex items-center gap-[1vw] overflow-hidden rounded-2xl bg-surface p-[1.3vw] text-left ring-1 ring-slate-200 transition hover:ring-2 hover:ring-indigo-400", "data-deck-team": t2.id }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute inset-x-0 top-0 h-1.5", style: { background: pf2.accent } }), /* @__PURE__ */ React.createElement(TeamRing, { tm, accent: pf2.accent, size: ring }), /* @__PURE__ */ React.createElement("span", { className: "flex min-w-0 flex-col gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "dk-s truncate font-bold text-slate-900" }, t2.name), /* @__PURE__ */ React.createElement(DeckDelta, { delta: tm.delta, cls: "dk-m" })));
@@ -5411,13 +5401,11 @@ function BoostOverview({ teams, dataOf, dataFor, month, prevKey, onOpen, setFor,
     }
     return null;
   }).filter(Boolean);
-  const thanks = teams.flatMap((t) => thanksOf(dataOf(t.id)).map((c) => ({ from: t, c })));
-  return /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-5" }, /* @__PURE__ */ React.createElement("section", { className: "flex flex-col gap-4 rounded-2xl bg-surface px-6 py-5 ring-1 ring-slate-200", "data-boost-stats": true }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1" }, /* @__PURE__ */ React.createElement("h3", { className: "text-[20px] font-bold text-slate-900" }, "이번 달 함께 볼 것"), /* @__PURE__ */ React.createElement("span", { className: "text-[15px] text-slate-500" }, "진척률은 평가가 아니라 이야기의 출발점이에요. 숫자가 왜 그렇게 움직였는지를 나눠요.")), /* @__PURE__ */ React.createElement("dl", { className: "grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-4" }, [
+  return /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-5" }, /* @__PURE__ */ React.createElement("section", { className: "flex flex-col gap-4 rounded-2xl bg-surface px-6 py-5 ring-1 ring-slate-200", "data-boost-stats": true }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1" }, /* @__PURE__ */ React.createElement("h3", { className: "text-[20px] font-bold text-slate-900" }, "이번 달 함께 볼 것"), /* @__PURE__ */ React.createElement("span", { className: "text-[15px] text-slate-500" }, "진척률은 평가가 아니라 이야기의 출발점이에요. 숫자가 왜 그렇게 움직였는지를 나눠요.")), /* @__PURE__ */ React.createElement("dl", { className: "grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3" }, [
     ["리더가 답할 도움", leaderOpen, "건", "leader"],
     ["열린 도움 요청", open.length, "건", "open"],
-    ["나눌 인사이트", insights.length, "개", "insight"],
-    ["고마운 일", thanks.length, "개", "thanks"]
-  ].map(([l, v, u, k]) => /* @__PURE__ */ React.createElement("div", { key: k, className: "flex flex-col gap-0.5 border-l-2 border-slate-200 pl-4", "data-stat": k }, /* @__PURE__ */ React.createElement("dt", { className: "text-[15px] font-semibold text-slate-500" }, l), /* @__PURE__ */ React.createElement("dd", { className: "text-[30px] font-bold leading-tight tabular-nums text-slate-900" }, v, /* @__PURE__ */ React.createElement("span", { className: "ml-0.5 text-[16px] font-semibold text-slate-400" }, u)))))), /* @__PURE__ */ React.createElement("section", { className: "flex flex-col gap-3", "aria-label": "팀별 한눈에 보기" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-x-6 gap-y-2", "data-ring-note": true }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-baseline gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("h3", { className: "text-[20px] font-bold text-slate-900" }, "팀별 이번 달"), /* @__PURE__ */ React.createElement("span", { className: "text-[14.5px] text-slate-500" }, "팀끼리 견주는 숫자가 아니에요. 각 팀의 지난달과 이번 달만 봐요.")), /* @__PURE__ */ React.createElement(RingLegend, { accent: "rgb(var(--slate-500))" })), /* @__PURE__ */ React.createElement(RingBasis, { period }), /* @__PURE__ */ React.createElement("div", { className: "grid gap-4 md:grid-cols-2 xl:grid-cols-3", "aria-label": "팀별 한눈에" }, teams.map((t) => /* @__PURE__ */ React.createElement(TeamBrief, { key: t.id, t, d: dataOf(t.id), toLabel, mv: moves[t.id], tm: boostTeamMove(t, moves[t.id] || {}, calc, month), onOpen: () => onOpen(t.id) })))), /* @__PURE__ */ React.createElement("div", { className: "grid items-start gap-4 lg:grid-cols-2" }, /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl bg-surface p-5 ring-1 ring-slate-200", "data-boost-insights": true }, /* @__PURE__ */ React.createElement("h3", { className: "mb-3 flex items-center gap-2 text-[19px] font-bold text-slate-900" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-500" }, "⭐"), "이번 달 나눌 인사이트"), insights.length ? /* @__PURE__ */ React.createElement("ul", { className: "flex flex-col gap-3" }, insights.map(({ t, f, tx, kr }) => /* @__PURE__ */ React.createElement("li", { key: t.id, className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onOpen(t.id), className: "text-[14.5px] font-bold text-slate-700 hover:underline" }, t.name), /* @__PURE__ */ React.createElement("span", { className: "text-[13.5px] text-slate-400" }, f === "learn" ? BOOST_Q[0].short : BOOST_Q[1].short), /* @__PURE__ */ React.createElement(KrTag, { team: t, uid: kr })), /* @__PURE__ */ React.createElement("p", { className: "text-[16.5px] leading-relaxed text-slate-900" }, tx)))) : /* @__PURE__ */ React.createElement("p", { className: "text-[15.5px] text-slate-400" }, "팀 메모에서 ⭐를 누르면 여기에 모여요")), /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl bg-surface p-5 ring-1 ring-slate-200", "data-boost-thanks": true }, /* @__PURE__ */ React.createElement("h3", { className: "mb-3 flex items-center gap-2 text-[19px] font-bold text-slate-900" }, /* @__PURE__ */ React.createElement(Icon, { name: "Heart", size: 18, className: "text-rose-400" }), "고마운 팀"), thanks.length ? /* @__PURE__ */ React.createElement("ul", { className: "flex flex-col gap-2.5" }, thanks.map(({ from, c }) => /* @__PURE__ */ React.createElement("li", { key: from.id + c.uid, className: "text-[16px] leading-relaxed text-slate-800" }, /* @__PURE__ */ React.createElement("span", { className: "whitespace-nowrap font-bold text-slate-700" }, from.name, " → ", toLabel(c.to)), /* @__PURE__ */ React.createElement("span", { className: "mx-2 text-slate-300" }, "|"), c.text))) : /* @__PURE__ */ React.createElement("p", { className: "text-[15.5px] text-slate-400" }, "팀 메모에서 다른 팀에 고마웠던 일을 한 줄 남겨요"))), /* @__PURE__ */ React.createElement("section", { className: "overflow-hidden rounded-2xl bg-surface ring-1 ring-slate-200", "aria-label": "도움 요청과 결정" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-3 px-5 py-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-baseline gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("h3", { className: "text-[20px] font-bold text-slate-900" }, "필요한 도움과 결정"), /* @__PURE__ */ React.createElement("span", { className: "text-[14.5px] text-slate-500" }, "정한 내용을 적어 두면 다음 달에 이어서 봐요")), /* @__PURE__ */ React.createElement("select", { value: toF, onChange: (e) => setToF(e.target.value), "aria-label": "누구에게 온 요청", className: "h-9 rounded-lg border-0 bg-surface px-2.5 text-[15px] text-slate-700 ring-1 ring-inset ring-slate-300 focus:outline-none" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "모든 요청"), /* @__PURE__ */ React.createElement("option", { value: "leader" }, "리더에게"), teams.map((t) => /* @__PURE__ */ React.createElement("option", { key: t.id, value: t.id }, t.name, "에게")))), shown.length ? /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto border-t border-slate-200" }, /* @__PURE__ */ React.createElement("table", { className: "w-full min-w-[760px] border-separate border-spacing-0 text-[16px]", "data-help-table": true }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, ["팀", "요청", "결정·지원", ""].map((h, i) => /* @__PURE__ */ React.createElement("th", { key: i, className: "border-b border-slate-200 bg-slate-50 px-4 py-2 text-left text-[14px] font-bold text-slate-500" }, h)))), /* @__PURE__ */ React.createElement("tbody", null, shown.map(({ t, b, mk, carried }) => /* @__PURE__ */ React.createElement("tr", { key: mk + t.id + b.uid, className: b.status === "done" ? "text-slate-400" : "", "data-help-row": b.uid }, /* @__PURE__ */ React.createElement("td", { className: "w-[120px] whitespace-nowrap border-b border-slate-100 px-4 py-3 align-top" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onOpen(t.id), className: "font-bold text-slate-800 hover:text-indigo-700 hover:underline" }, t.name), carried && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-[13px] font-semibold text-amber-700" }, "지난달부터")), /* @__PURE__ */ React.createElement("td", { className: "border-b border-slate-100 px-4 py-3 align-top" }, /* @__PURE__ */ React.createElement("div", { className: cx("font-semibold", b.status === "done" ? "line-through" : "text-slate-900") }, b.text), b.kr && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement(KrTag, { team: t, uid: b.kr })), (b.help || (b.to || []).length > 0) && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 flex flex-wrap items-center gap-x-2 text-[15px] text-slate-500" }, b.help && /* @__PURE__ */ React.createElement("span", null, b.help), (b.to || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-indigo-700" }, "→ ", b.to.map(toLabel).join(", ")))), /* @__PURE__ */ React.createElement("td", { className: "w-[34%] border-b border-slate-100 px-3 py-2 align-top" }, /* @__PURE__ */ React.createElement(DecisionInput, { value: b.decision, onChange: (v) => patch(mk, t, b, (x) => {
+    ["나눌 인사이트", insights.length, "개", "insight"]
+  ].map(([l, v, u, k]) => /* @__PURE__ */ React.createElement("div", { key: k, className: "flex flex-col gap-0.5 border-l-2 border-slate-200 pl-4", "data-stat": k }, /* @__PURE__ */ React.createElement("dt", { className: "text-[15px] font-semibold text-slate-500" }, l), /* @__PURE__ */ React.createElement("dd", { className: "text-[30px] font-bold leading-tight tabular-nums text-slate-900" }, v, /* @__PURE__ */ React.createElement("span", { className: "ml-0.5 text-[16px] font-semibold text-slate-400" }, u)))))), /* @__PURE__ */ React.createElement("section", { className: "flex flex-col gap-3", "aria-label": "팀별 한눈에 보기" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-x-6 gap-y-2", "data-ring-note": true }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-baseline gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("h3", { className: "text-[20px] font-bold text-slate-900" }, "팀별 이번 달"), /* @__PURE__ */ React.createElement("span", { className: "text-[14.5px] text-slate-500" }, "팀끼리 견주는 숫자가 아니에요. 각 팀의 지난달과 이번 달만 봐요.")), /* @__PURE__ */ React.createElement(RingLegend, { accent: "rgb(var(--slate-500))" })), /* @__PURE__ */ React.createElement(RingBasis, { period }), /* @__PURE__ */ React.createElement("div", { className: "grid gap-4 md:grid-cols-2 xl:grid-cols-3", "aria-label": "팀별 한눈에" }, teams.map((t) => /* @__PURE__ */ React.createElement(TeamBrief, { key: t.id, t, d: dataOf(t.id), toLabel, mv: moves[t.id], tm: boostTeamMove(t, moves[t.id] || {}, calc, month), onOpen: () => onOpen(t.id) })))), /* @__PURE__ */ React.createElement("div", { className: "grid items-start gap-4" }, /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl bg-surface p-5 ring-1 ring-slate-200", "data-boost-insights": true }, /* @__PURE__ */ React.createElement("h3", { className: "mb-3 flex items-center gap-2 text-[19px] font-bold text-slate-900" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-500" }, "⭐"), "이번 달 나눌 인사이트"), insights.length ? /* @__PURE__ */ React.createElement("ul", { className: "flex flex-col gap-3" }, insights.map(({ t, f, tx, kr }) => /* @__PURE__ */ React.createElement("li", { key: t.id, className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onOpen(t.id), className: "text-[14.5px] font-bold text-slate-700 hover:underline" }, t.name), /* @__PURE__ */ React.createElement("span", { className: "text-[13.5px] text-slate-400" }, f === "learn" ? BOOST_Q[0].short : BOOST_Q[1].short), /* @__PURE__ */ React.createElement(KrTag, { team: t, uid: kr })), /* @__PURE__ */ React.createElement("p", { className: "text-[16.5px] leading-relaxed text-slate-900" }, tx)))) : /* @__PURE__ */ React.createElement("p", { className: "text-[15.5px] text-slate-400" }, "팀 메모에서 ⭐를 누르면 여기에 모여요"))), /* @__PURE__ */ React.createElement("section", { className: "overflow-hidden rounded-2xl bg-surface ring-1 ring-slate-200", "aria-label": "도움 요청과 결정" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-3 px-5 py-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-baseline gap-x-3 gap-y-1" }, /* @__PURE__ */ React.createElement("h3", { className: "text-[20px] font-bold text-slate-900" }, "필요한 도움과 결정"), /* @__PURE__ */ React.createElement("span", { className: "text-[14.5px] text-slate-500" }, "정한 내용을 적어 두면 다음 달에 이어서 봐요")), /* @__PURE__ */ React.createElement("select", { value: toF, onChange: (e) => setToF(e.target.value), "aria-label": "누구에게 온 요청", className: "h-9 rounded-lg border-0 bg-surface px-2.5 text-[15px] text-slate-700 ring-1 ring-inset ring-slate-300 focus:outline-none" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "모든 요청"), /* @__PURE__ */ React.createElement("option", { value: "leader" }, "리더에게"), teams.map((t) => /* @__PURE__ */ React.createElement("option", { key: t.id, value: t.id }, t.name, "에게")))), shown.length ? /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto border-t border-slate-200" }, /* @__PURE__ */ React.createElement("table", { className: "w-full min-w-[760px] border-separate border-spacing-0 text-[16px]", "data-help-table": true }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, ["팀", "요청", "결정·지원", ""].map((h, i) => /* @__PURE__ */ React.createElement("th", { key: i, className: "border-b border-slate-200 bg-slate-50 px-4 py-2 text-left text-[14px] font-bold text-slate-500" }, h)))), /* @__PURE__ */ React.createElement("tbody", null, shown.map(({ t, b, mk, carried }) => /* @__PURE__ */ React.createElement("tr", { key: mk + t.id + b.uid, className: b.status === "done" ? "text-slate-400" : "", "data-help-row": b.uid }, /* @__PURE__ */ React.createElement("td", { className: "w-[120px] whitespace-nowrap border-b border-slate-100 px-4 py-3 align-top" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onOpen(t.id), className: "font-bold text-slate-800 hover:text-indigo-700 hover:underline" }, t.name), carried && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-[13px] font-semibold text-amber-700" }, "지난달부터")), /* @__PURE__ */ React.createElement("td", { className: "border-b border-slate-100 px-4 py-3 align-top" }, /* @__PURE__ */ React.createElement("div", { className: cx("font-semibold", b.status === "done" ? "line-through" : "text-slate-900") }, b.text), b.kr && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement(KrTag, { team: t, uid: b.kr })), (b.help || (b.to || []).length > 0) && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 flex flex-wrap items-center gap-x-2 text-[15px] text-slate-500" }, b.help && /* @__PURE__ */ React.createElement("span", null, b.help), (b.to || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-indigo-700" }, "→ ", b.to.map(toLabel).join(", ")))), /* @__PURE__ */ React.createElement("td", { className: "w-[34%] border-b border-slate-100 px-3 py-2 align-top" }, /* @__PURE__ */ React.createElement(DecisionInput, { value: b.decision, onChange: (v) => patch(mk, t, b, (x) => {
     x.decision = v;
   }) })), /* @__PURE__ */ React.createElement("td", { className: "w-[96px] border-b border-slate-100 px-4 py-3 text-right align-top" }, /* @__PURE__ */ React.createElement(StatusToggle, { done: b.status === "done", onToggle: () => patch(mk, t, b, (x) => {
     x.status = x.status === "done" ? "open" : "done";
@@ -5470,7 +5458,7 @@ function TeamBrief({ t, d, toLabel, mv, tm, onOpen }) {
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute inset-x-0 top-0 h-1", style: { background: pf.accent } }),
     /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-col gap-1" }, /* @__PURE__ */ React.createElement("h4", { className: "truncate text-[21px] font-bold text-slate-900" }, t.name), tm && isNum(tm.delta) ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-baseline gap-x-2", "data-brief-delta": true }, /* @__PURE__ */ React.createElement("span", { className: "text-[14.5px] font-semibold text-slate-500" }, "이번 달"), /* @__PURE__ */ React.createElement(MoveDelta, { delta: tm.delta })) : /* @__PURE__ */ React.createElement("span", { className: "text-[14.5px] text-slate-400" }, "이 달 기록 없음")), /* @__PURE__ */ React.createElement(TeamRing, { tm, accent: pf.accent, size: 76 })),
     hiText ? /* @__PURE__ */ React.createElement("figure", { className: "flex flex-col gap-1 rounded-xl bg-slate-50 px-3.5 py-2.5", "data-brief-hi": true }, /* @__PURE__ */ React.createElement("figcaption", { className: "flex items-center gap-1.5 text-[13.5px] font-bold text-slate-500" }, starred && /* @__PURE__ */ React.createElement("span", { className: "text-amber-500" }, "⭐"), hi && ms.includes(hi) ? BOOST_Q[1].short : BOOST_Q[0].short, more > 0 && /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-slate-400" }, "· 이야기 ", more, "개 더")), /* @__PURE__ */ React.createElement("blockquote", { className: "line-clamp-2 text-[15.5px] leading-relaxed text-slate-800" }, hiText)) : /* @__PURE__ */ React.createElement("p", { className: "rounded-xl border border-dashed border-slate-200 px-3.5 py-2.5 text-[15px] text-slate-400" }, "아직 적은 내용이 없어요"),
-    /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-x-3 gap-y-1 text-[14.5px] text-slate-600", "data-brief-sig": true }, chips.length ? chips.map((s) => /* @__PURE__ */ React.createElement("span", { key: s.k, className: "inline-flex items-center gap-1 whitespace-nowrap" }, /* @__PURE__ */ React.createElement(Icon, { name: s.icon, size: 13, className: "text-slate-400" }), s.label, " ", /* @__PURE__ */ React.createElement("b", { className: "tabular-nums text-slate-800" }, c[s.k]))) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "이번 달 시그널 없음")),
+    /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-x-3 gap-y-1 text-[14.5px] text-slate-600", "data-brief-sig": true }, chips.length ? chips.map((s) => /* @__PURE__ */ React.createElement("span", { key: s.k, className: "inline-flex items-center gap-1 whitespace-nowrap" }, /* @__PURE__ */ React.createElement(Icon, { name: s.icon, size: 13, className: "text-slate-400" }), s.label, " ", /* @__PURE__ */ React.createElement("b", { className: "tabular-nums text-slate-800" }, c[s.k]))) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "이번 달 완료 없음")),
     /* @__PURE__ */ React.createElement("div", { className: "mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-slate-100 pt-3 text-[14.5px]" }, /* @__PURE__ */ React.createElement("span", { className: cx("font-bold", openB.length ? "text-indigo-700" : "text-slate-400") }, "도움 ", openB.length, "건"), openB.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "min-w-0 truncate text-slate-500" }, "→ ", [...new Set(openB.flatMap((b) => b.to || []))].map(toLabel).join(", ")), kinds.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-auto inline-flex items-center gap-1.5 text-slate-400", title: `남긴 결과물: ${kinds.map((x) => x.label).join(", ")}`, "data-brief-shows": true }, kinds.map((x) => /* @__PURE__ */ React.createElement(Icon, { key: x.k, name: x.icon, size: 15 }))))
   );
 }
@@ -5629,7 +5617,6 @@ function BoostTeamEdit({ state, calc, team, d, prevD, month, kb, teams, me, set,
   const pf = profileOf(team);
   const ins = useMemo(() => teamInList(team), [team]);
   const [draft, setDraft] = useState({ text: "", help: "", to: [], kr: "" });
-  const [thx, setThx] = useState({ to: "", text: "" });
   const inSet = new Set(ins.map((x) => x.i.uid));
   const blockedCards = (kb && kb.cards || []).filter((c) => c.blocked && c.inUid && inSet.has(c.inUid) && !kbIsDone(kb, c.col));
   const weekBlocks = [];
@@ -5643,13 +5630,6 @@ function BoostTeamEdit({ state, calc, team, d, prevD, month, kb, teams, me, set,
       x.noBlocker = false;
     });
     setDraft({ text: "", help: "", to: [], kr: "" });
-  };
-  const addThanks = () => {
-    if (!thx.to || !String(thx.text || "").trim()) return;
-    set((x) => {
-      x.cheers = [...Array.isArray(x.cheers) ? x.cheers : [], { uid: newUid("th"), kind: "thanks", to: thx.to, text: thx.text.trim(), by: me ? me.email : "", at: (/* @__PURE__ */ new Date()).toISOString() }];
-    });
-    setThx({ to: "", text: "" });
   };
   const plans = plansOf(d);
   const rows = plans.length ? plans : [{ uid: "", kr: "", how: "" }];
@@ -5774,21 +5754,7 @@ function BoostTeamEdit({ state, calc, team, d, prevD, month, kb, teams, me, set,
       sub: isPipeline(pf.kind) ? "제품개발 체크리스트에서 자동으로 모아요. 체크리스트만으로 보이지 않는 내용은 아래에 부연 설명으로 적어요." : "글·링크·사진·현장 숫자·고객의 목소리·함께한 파트너 중 골라 남겨요. 발표 때 바로 보여 줄 수 있어요."
     },
     /* @__PURE__ */ React.createElement(BoostShowEdit, { kind: pf.kind, team, d, prevD, set, state, calc, month, accent: pf.accent, me })
-  ), isPipeline(pf.kind) && /* @__PURE__ */ React.createElement(BoostCard, { title: "이번 달 결과물과 현장 기록", accent: pf.accent, sub: "글·링크·사진·현장 숫자·고객의 목소리·함께한 파트너 중 골라 남겨요. 발표 때 바로 보여 줄 수 있어요." }, /* @__PURE__ */ React.createElement(BoostShowEdit, { kind: "pipeShow", team, d, prevD, set, state, calc, month, accent: pf.accent, me })), /* @__PURE__ */ React.createElement(BoostCard, { title: "고마웠던 팀", sub: "이번 달 다른 팀에 고마웠던 일을 한 줄로 남겨요. 한눈에 보기에 모여요." }, thanksOf(d).length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mb-3 flex flex-col gap-1.5" }, thanksOf(d).map((c) => /* @__PURE__ */ React.createElement("li", { key: c.uid, className: "flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-[15.5px]" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 whitespace-nowrap font-bold text-slate-700" }, "→ ", boostTo(teams)(c.to)), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-slate-800" }, c.text), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": "고마운 일 삭제", onClick: () => set((x) => {
-    x.cheers = (x.cheers || []).filter((z) => z.uid !== c.uid);
-  }), className: "shrink-0 rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600" }, /* @__PURE__ */ React.createElement(Icon, { name: "Trash2", size: 15 }))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5", role: "group", "aria-label": "고마운 팀" }, teams.filter((t) => t.id !== team.id).map((t) => /* @__PURE__ */ React.createElement("button", { key: t.id, type: "button", "aria-pressed": thx.to === t.id, onClick: () => setThx({ ...thx, to: thx.to === t.id ? "" : t.id }), className: chip(thx.to === t.id) }, t.name))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      value: thx.text,
-      onChange: (e) => setThx({ ...thx, text: e.target.value }),
-      "aria-label": "고마웠던 일",
-      placeholder: "예: 촬영 일정 맞춰 주셔서 출시를 지킬 수 있었어요",
-      className: inp,
-      onKeyDown: (e) => {
-        if (e.key === "Enter" && !e.nativeEvent.isComposing) addThanks();
-      }
-    }
-  ), /* @__PURE__ */ React.createElement(Btn, { size: "sm", kind: "primary", icon: "Plus", disabled: !thx.to || !thx.text.trim(), onClick: addThanks }, "남기기")))))));
+  ), isPipeline(pf.kind) && /* @__PURE__ */ React.createElement(BoostCard, { title: "이번 달 결과물과 현장 기록", accent: pf.accent, sub: "글·링크·사진·현장 숫자·고객의 목소리·함께한 파트너 중 골라 남겨요. 발표 때 바로 보여 줄 수 있어요." }, /* @__PURE__ */ React.createElement(BoostShowEdit, { kind: "pipeShow", team, d, prevD, set, state, calc, month, accent: pf.accent, me })))));
 }
 function TeamSpecialView({ kind, team, d, state, calc, month, accent }) {
   const nav = useContext(NavCtx);
